@@ -57,6 +57,15 @@ active proctype InCtrl() {
         // send ready ack
         blue!FILLING;
         printf("[in controller] (blue) sent filling\n");
+
+        // receive filling ack
+        blue?FILLING_ACK;
+        printf("[in controller] (blue) received filling ack\n");
+
+        // vessel filled - update state
+        current_state = FILLED;
+        inValve_open = false;
+        printf("[in controller] (in valve) closed\n");
     od
 }
 
@@ -93,6 +102,7 @@ active proctype OutCtrl() {
             vessel_state = FILLED;
             red!vessel_state;
             printf("[out controller] (red) sent vessel state: FILLED\n");
+            
         }
     od
 }
