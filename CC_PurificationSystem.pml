@@ -10,18 +10,29 @@ bool out_open = false;
 chan blue = [2] of {mtype}
 chan red = [2] of {mtype}
 
-proctype InCtrl() {
-    
-}
+// proctype InCtrl() {
+//
+// }
 
-proctype OutCtrl() {
-    
-}
+active proctype OutCtrl() {
+    mtype message;
+    do
+        :: blue?message; message == STATUS_QUERY -> {
+            // send status query ack
+            red!STATUS_QUERY_ACK;
+            printf("[out controller] (red) sent status query\n");
 
-proctype Vessel() {
-    
+            // send status
+            blue!vessel_state;
+            printf("[out controller] (blue) sent status\n");
+        }
+    od
 }
 
 init {
-    
+    blue!STATUS_QUERY;
 }
+
+// proctype Vessel() {
+//
+// }
