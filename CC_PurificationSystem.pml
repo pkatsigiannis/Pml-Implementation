@@ -24,7 +24,6 @@ proctype InCtrl() {
 }
 
 active proctype OutCtrl() {
-    mtype message;
     do
         :: blue?eval(STATUS_QUERY) -> {
             // send status query ack
