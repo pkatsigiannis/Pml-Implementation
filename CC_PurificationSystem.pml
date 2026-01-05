@@ -23,15 +23,15 @@ active proctype InCtrl() {
     :: !(blue?[STATUS_QUERY]) ->
         // send status query
         blue!STATUS_QUERY;
-        // printf("[in controller] (blue) sent status query\n");
+        printf("[in controller] (blue) sent status query\n");
 
         // receive status query ack
         blue?STATUS_QUERY_ACK;
-        // printf("[in controller] (blue) received status query ack\n");
+        printf("[in controller] (blue) received status query ack\n");
 
         // receive vessel state
         red?current_state;
-        // printf("[in controller] (red) received vessel state: %d\n", current_state);
+        printf("[in controller] (red) received vessel state: %d\n", current_state);
 
         // update vessel state
         vessel_state = current_state;
@@ -43,7 +43,7 @@ active proctype InCtrl() {
 
         // receive filling request ack
         blue?REQ_FILLING_ACK;
-        printf("[in controller] (blue) received filling request ack\n");
+        printf("[in controller] (blue) received filling request ack ack\n");
 
         // receive ready
         red?READY;
@@ -75,11 +75,11 @@ active proctype OutCtrl() {
         :: blue?eval(STATUS_QUERY) -> {
             // send status query ack
             blue!STATUS_QUERY_ACK;
-            // printf("[out controller] (blue) sent status query\n");
+            printf("[out controller] (blue) sent status query\n");
 
             // send status
             red!vessel_state;
-            // printf("[out controller] (red) sent status\n");
+            printf("[out controller] (red) sent status\n");
         }
         :: blue?eval(REQ_FILLING) -> {
             // send filling request ack
