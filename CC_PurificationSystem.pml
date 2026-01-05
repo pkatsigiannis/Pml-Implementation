@@ -77,6 +77,14 @@ active proctype OutCtrl() {
             red!READY;
             printf("[out controller] (red) sent ready\n");
 
+            // send filling ack
+            blue!FILLING_ACK;
+            printf("[out controller] (blue) sent filling ack\n");
+
+            // vessel filled - send filled
+            vessel_state = FILLED;
+            red!vessel_state;
+            printf("[out controller] (red) sent vessel state: FILLED\n");
         }
     od
 }
