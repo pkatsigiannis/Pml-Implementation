@@ -5,13 +5,15 @@ mtype = {
     READY_ACK, FILLING, FILLING_ACK,
     OPEN, CLOSE
 };
+
 mtype vessel_state = EMPTY;
+
+bool inValve_open  = false;
+bool outValve_open = false;
 
 chan blue = [2] of {mtype};
 chan red = [2] of {mtype};
 chan vessel = [2] of {mtype};
-chan inCtrl_command = [2] of {mtype};
-chan outCtrl_command = [2] of {mtype};
 
 active proctype InCtrl() {
     mtype current_state;
@@ -66,11 +68,3 @@ active proctype OutCtrl() {
         }
     od
 }
-
-// proctype InValve() {
-//
-// }
-
-// proctype OutValve() {
-//
-// }
