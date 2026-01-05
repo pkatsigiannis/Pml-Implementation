@@ -16,7 +16,9 @@ chan red = [2] of {mtype};
 chan vessel = [2] of {mtype};
 
 active proctype InCtrl() {
+
     mtype current_state;
+
     do
     :: !(blue?[STATUS_QUERY]) ->
         blue!STATUS_QUERY;
@@ -44,6 +46,7 @@ active proctype InCtrl() {
 }
 
 active proctype OutCtrl() {
+    
     do
         :: blue?eval(STATUS_QUERY) -> {
             // send status query ack
