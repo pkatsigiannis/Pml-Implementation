@@ -26,7 +26,7 @@ proctype InCtrl() {
 active proctype OutCtrl() {
     mtype message;
     do
-        :: blue?(STATUS_QUERY) -> {
+        :: blue?eval(STATUS_QUERY) -> {
             // send status query ack
             blue!STATUS_QUERY_ACK;
             printf("[out controller] (blue) sent status query\n");
