@@ -52,6 +52,18 @@ active proctype OutCtrl() {
             red!vessel_state;
             printf("[out controller] (red) sent status\n");
         }
+        :: blue?eval(REQ_FILLING) -> {
+            // send filling request ack
+            blue!REQ_FILLING_ACK;
+            printf("[out controller] (blue) sent filling request ack\n");
+
+            // todo: close
+
+            // send ready
+            red!READY;
+            printf("[out controller] (red) sent ready\n");
+
+        }
     od
 }
 
