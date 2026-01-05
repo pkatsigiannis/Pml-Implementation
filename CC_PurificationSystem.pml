@@ -70,7 +70,7 @@ active proctype InCtrl() {
 }
 
 active proctype OutCtrl() {
-    
+
     do
         :: blue?eval(STATUS_QUERY) -> {
             // send status query ack
@@ -93,7 +93,9 @@ active proctype OutCtrl() {
             // send ready
             red!READY;
             printf("[out controller] (red) sent ready\n");
+        }
 
+        :: blue?eval(FILLING) -> {
             // send filling ack
             blue!FILLING_ACK;
             printf("[out controller] (blue) sent filling ack\n");
@@ -102,7 +104,7 @@ active proctype OutCtrl() {
             vessel_state = FILLED;
             red!vessel_state;
             printf("[out controller] (red) sent vessel state: FILLED\n");
-            
+
         }
     od
 }
