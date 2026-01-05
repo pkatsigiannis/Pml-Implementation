@@ -16,7 +16,8 @@ chan outCtrl_command = [2] of {mtype};
 proctype InCtrl() { 
     mtype current_state; 
     do 
-        :: blue!STATUS_QUERY; 
+        :: !(blue?[STATUS_QUERY]); 
+            blue!STATUS_QUERY;
             blue?STATUS_QUERY_ACK; 
             red?current_state; 
         // current_state: EMPTY/READY/FILLED 
