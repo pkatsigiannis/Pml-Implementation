@@ -61,8 +61,4 @@ active proctype OutCtrl() {
 
 // proctype OutValve() {
 //
-// }   
-
-init {
-    blue!STATUS_QUERY;
-}
+// }
