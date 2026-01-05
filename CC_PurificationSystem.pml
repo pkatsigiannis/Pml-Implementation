@@ -1,14 +1,13 @@
-mtype {EMPTY, READY, FILLED, READY_ACK, FILLING, FILLING_ACK}
-
-mtype {STATUS_QUERY, REQ_FILLING}
-mtype {STATUS_QUERY_ACK, REQ_FILLING_ACK}
-
-mtype vessel_state = EMPTY;
-bool in_open = false;
-bool out_open = false;
+mtype {EMPTY, READY, FILLED, READY_ACK, FILLING, FILLING_ACK,
+       STATUS_QUERY, REQ_FILLING, 
+       STATUS_QUERY_ACK, REQ_FILLING_ACK,
+       OPEN, CLOSE}
 
 chan blue = [2] of {mtype}
 chan red = [2] of {mtype}
+chan vessel = [6] of {mtype}
+chan inCtrl_commmd = [2] of {mtype}
+chan outCtrl_command = [2] of {mtype}
 
 // proctype InCtrl() {
 //
@@ -29,10 +28,14 @@ active proctype OutCtrl() {
     od
 }
 
+// proctype InValve() {
+//
+// }
+
+// proctype OutValve() {
+//
+// }   
+
 init {
     blue!STATUS_QUERY;
 }
-
-// proctype Vessel() {
-//
-// }
