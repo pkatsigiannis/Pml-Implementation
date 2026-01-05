@@ -13,7 +13,7 @@ chan vessel = [2] of {mtype};
 chan inCtrl_command = [2] of {mtype};
 chan outCtrl_command = [2] of {mtype};
 
-proctype InCtrl() {
+active proctype InCtrl() {
     mtype current_state;
     do
     :: !(blue?[STATUS_QUERY]) ->
