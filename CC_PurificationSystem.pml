@@ -5,16 +5,23 @@ mtype = {
     READY_ACK, FILLING, FILLING_ACK,
     OPEN, CLOSE
 };
+mtype vessel_state = EMPTY;
 
-chan blue = [2] of {mtype}
-chan red = [2] of {mtype}
-chan vessel = [6] of {mtype}
-chan inCtrl_commmd = [2] of {mtype}
-chan outCtrl_command = [2] of {mtype}
+chan blue = [2] of {mtype};
+chan red = [2] of {mtype};
+chan vessel = [6] of {mtype};
+chan inCtrl_commmd = [2] of {mtype};
+chan outCtrl_command = [2] of {mtype};
 
-// proctype InCtrl() {
-//
-// }
+proctype InCtrl() { 
+    mtype current_state; 
+    do :: blue!STATUS_QUERY; 
+    blue?STATUS_QUERY_ACK; 
+    red?current_state; 
+    // current_state: EMPTY/READY/FILLED 
+    // next: if vessel_state==EMPTY then blue!REQ_FILLING ...
+    od 
+}
 
 active proctype OutCtrl() {
     mtype message;
