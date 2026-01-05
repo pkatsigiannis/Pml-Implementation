@@ -19,11 +19,15 @@ active proctype InCtrl() {
     :: !(blue?[STATUS_QUERY]) ->
         blue!STATUS_QUERY;
         printf("[in controller] (blue) sent status query\n");
+
         blue?STATUS_QUERY_ACK;
         printf("[in controller] (blue) received status query ack\n");
+
         red?current_state;
         printf("[in controller] (red) received vessel state: %d\n", current_state);
+
         vessel_state = current_state;
+        
     :: current_state = EMPTY ->
         blue!REQ_FILLING;
         printf("[in controller] (blue) sent filling request\n");
