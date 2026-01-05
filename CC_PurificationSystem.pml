@@ -1,7 +1,10 @@
-mtype {EMPTY, READY, FILLED, READY_ACK, FILLING, FILLING_ACK,
-       STATUS_QUERY, REQ_FILLING, 
-       STATUS_QUERY_ACK, REQ_FILLING_ACK,
-       OPEN, CLOSE}
+mtype = {
+    EMPTY, READY, FILLED,
+    STATUS_QUERY, STATUS_QUERY_ACK,
+    REQ_FILLING, REQ_FILLING_ACK,
+    READY_ACK, FILLING, FILLING_ACK,
+    OPEN, CLOSE
+};
 
 chan blue = [2] of {mtype}
 chan red = [2] of {mtype}
