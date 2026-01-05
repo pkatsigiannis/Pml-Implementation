@@ -21,12 +21,12 @@ active proctype OutCtrl() {
     do
         :: blue?message; message == STATUS_QUERY -> {
             // send status query ack
-            red!STATUS_QUERY_ACK;
-            printf("[out controller] (red) sent status query\n");
+            blue!STATUS_QUERY_ACK;
+            printf("[out controller] (blue) sent status query\n");
 
             // send status
-            blue!vessel_state;
-            printf("[out controller] (blue) sent status\n");
+            red!vessel_state;
+            printf("[out controller] (red) sent status\n");
         }
     od
 }
