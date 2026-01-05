@@ -63,6 +63,8 @@ active proctype OutCtrl() {
             printf("[out controller] (blue) sent filling request ack\n");
 
             // todo: close
+            outValve_open = false;
+            printf("[out controller] (out valve) closed\n");
 
             // send ready
             red!READY;
