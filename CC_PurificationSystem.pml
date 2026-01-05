@@ -42,6 +42,13 @@ active proctype InCtrl() {
         red?READY;
         printf("[in controller] (red) received ready\n");
         current_state = READY;
+
+        // todo: open
+        inValve_open = true;
+        printf("[in controller] (in valve) opened\n");
+
+        blue!FILLING;
+        printf("[in controller] (blue) sent filling\n");
     od
 }
 
