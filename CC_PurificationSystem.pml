@@ -10,7 +10,7 @@ mtype vessel_state = EMPTY;
 chan blue = [2] of {mtype};
 chan red = [2] of {mtype};
 chan vessel = [2] of {mtype};
-chan inCtrl_commmd = [2] of {mtype};
+chan inCtrl_command = [2] of {mtype};
 chan outCtrl_command = [2] of {mtype};
 
 proctype InCtrl() {
