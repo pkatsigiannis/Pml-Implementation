@@ -6,7 +6,7 @@ mtype = {
     OPEN, CLOSE
 };
 
-mtype vessel_state = EMPTY;
+mtype vessel_state = READY;
 
 bool inValve_open = false;
 bool outValve_open = false;
