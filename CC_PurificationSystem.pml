@@ -24,6 +24,16 @@ active proctype InCtrl() {
         red?current_state;
         printf("[in controller] (red) received vessel state: %d\n", current_state);
         vessel_state = current_state;
+    :: current_state = EMPTY ->
+        blue!REQ_FILLING;
+        printf("[in controller] (blue) sent filling request\n");
+
+        blue?REQ_FILLING_ACK;
+        printf("[in controller] (blue) received filling request ack ack\n");
+
+        red?READY;
+        printf("[in controller] (red) received ready\n");
+        current_state = READY;
     od
 }
 
