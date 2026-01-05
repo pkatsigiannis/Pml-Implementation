@@ -8,7 +8,7 @@ mtype = {
 
 mtype vessel_state = EMPTY;
 
-bool inValve_open  = false;
+bool inValve_open = false;
 bool outValve_open = false;
 
 chan blue = [2] of {mtype};
@@ -21,24 +21,31 @@ active proctype InCtrl() {
 
     do
     :: !(blue?[STATUS_QUERY]) ->
+        // send status query
         blue!STATUS_QUERY;
         printf("[in controller] (blue) sent status query\n");
 
+        // receive status query ack
         blue?STATUS_QUERY_ACK;
         printf("[in controller] (blue) received status query ack\n");
 
+        // receive vessel state
         red?current_state;
         printf("[in controller] (red) received vessel state: %d\n", current_state);
 
+        // update vessel state
         vessel_state = current_state;
 
     :: current_state == EMPTY ->
+        // send filling request
         blue!REQ_FILLING;
         printf("[in controller] (blue) sent filling request\n");
 
+        // receive filling request ack
         blue?REQ_FILLING_ACK;
         printf("[in controller] (blue) received filling request ack ack\n");
 
+        // receive ready
         red?READY;
         printf("[in controller] (red) received ready\n");
         current_state = READY;
@@ -47,6 +54,7 @@ active proctype InCtrl() {
         inValve_open = true;
         printf("[in controller] (in valve) opened\n");
 
+        // send ready ack
         blue!FILLING;
         printf("[in controller] (blue) sent filling\n");
     od
