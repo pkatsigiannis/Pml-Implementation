@@ -6,7 +6,7 @@ mtype = {
     OPEN, CLOSE
 };
 
-mtype vessel_state = READY;
+mtype vessel_state = EMPTY;
 
 bool inValve_open = false;
 bool outValve_open = false;
@@ -86,6 +86,7 @@ active proctype OutCtrl() {
             blue!REQ_FILLING_ACK;
             printf("[out controller] (blue) sent filling request ack\n");
 
+            // ???Somewhat arbitrarily decide to close the out valve here???
             // todo: close
             outValve_open = false;
             printf("[out controller] (out valve) closed\n");
