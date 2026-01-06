@@ -60,6 +60,9 @@ proctype InCtrl() {
             blue?FILLING_ACK;
             printf("[in controller] (blue) received filling ack\n");
 
+            red?FILLED;
+            printf("[in controller] (red) received FILLED\n");
+
             // vessel filled - update state
             current_state = FILLED;
             inValve_open = false;
