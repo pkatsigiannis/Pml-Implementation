@@ -15,7 +15,7 @@ chan blue = [2] of {mtype};
 chan red = [2] of {mtype};
 chan vessel = [2] of {mtype}; // are we using it anywhere?
 
-proctype InCtrl() {
+proctype InValveCtrl() {
 
     mtype current_state;
 
@@ -75,7 +75,7 @@ proctype InCtrl() {
     od
 }
 
-proctype OutCtrl() {
+proctype OutValveCtrl() {
 
     do
         :: blue?STATUS_QUERY -> {
@@ -117,7 +117,7 @@ proctype OutCtrl() {
 
 init {
     atomic {
-        run InCtrl();
-        run OutCtrl();
+        run InValveCtrl();
+        run OutValveCtrl();
     }
 }
