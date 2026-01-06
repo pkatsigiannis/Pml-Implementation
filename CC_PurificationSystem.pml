@@ -11,11 +11,11 @@ mtype vessel_state = EMPTY;
 bool inValve_open = false;
 bool outValve_open = false;
 
-chan Blue = [2] of {mtype};
-chan Red = [2] of {mtype};
+chan blue = [2] of {mtype};
+chan red = [2] of {mtype};
 chan vessel = [2] of {mtype}; // are we using it anywhere?
 
-proctype InCtrl(chan blue, chan red) {
+proctype InCtrl() {
 
     mtype current_state;
 
@@ -72,7 +72,7 @@ proctype InCtrl(chan blue, chan red) {
     od
 }
 
-proctype OutCtrl(chan blue, chan red) {
+proctype OutCtrl() {
 
     do
         :: blue?eval(STATUS_QUERY) -> {
@@ -115,7 +115,7 @@ proctype OutCtrl(chan blue, chan red) {
 
 init {
     atomic {
-        run InCtrl(Blue, Red);
-        run OutCtrl(Blue, Red);
+        run InCtrl();
+        run OutCtrl();
     }
 }
