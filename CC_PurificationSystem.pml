@@ -75,7 +75,7 @@ proctype InCtrl() {
 proctype OutCtrl() {
 
     do
-        :: blue?eval(STATUS_QUERY) -> {
+        :: blue?STATUS_QUERY -> {
             // send status query ack
             blue!STATUS_QUERY_ACK;
             printf("[out controller] (blue) sent status query\n");
@@ -84,7 +84,7 @@ proctype OutCtrl() {
             red!vessel_state;
             printf("[out controller] (red) sent status\n");
         }
-        :: blue?eval(REQ_FILLING) -> {
+        :: blue?REQ_FILLING -> {
             // send filling request ack
             blue!REQ_FILLING_ACK;
             printf("[out controller] (blue) sent filling request ack\n");
@@ -98,7 +98,7 @@ proctype OutCtrl() {
             printf("[out controller] (red) sent ready\n");
         }
 
-        :: blue?eval(FILLING) -> {
+        :: blue?FILLING -> {
             // send filling ack
             blue!FILLING_ACK;
             printf("[out controller] (blue) sent filling ack\n");
