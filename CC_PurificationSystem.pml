@@ -13,7 +13,7 @@ bool outValve_open = false;
 
 chan blue = [2] of {mtype};
 chan red = [2] of {mtype};
-chan vessel = [2] of {mtype};
+chan vessel = [2] of {mtype}; // are we using it anywhere?
 
 active proctype InCtrl() {
 
@@ -31,38 +31,44 @@ active proctype InCtrl() {
 
         // receive vessel state
         red?current_state;
-        printf("[in controller] (red) received vessel state: %d\n", current_state);
+        printf("[in controller] (red) received vessel state: %e\n", current_state);
 
-    :: current_state == EMPTY ->
-        // send filling request
-        blue!REQ_FILLING;
-        printf("[in controller] (blue) sent filling request\n");
+        if // execute immediately - avoid STATUS_QUERY spam
+        :: current_state == EMPTY ->
+            // send filling request
+            blue!REQ_FILLING;
+            printf("[in controller] (blue) sent filling request\n");
 
-        // receive filling request ack
-        blue?REQ_FILLING_ACK;
-        printf("[in controller] (blue) received filling request ack ack\n");
+            // receive filling request ack
+            blue?REQ_FILLING_ACK;
+            printf("[in controller] (blue) received filling request ack ack\n");
 
-        // receive ready
-        red?READY;
-        printf("[in controller] (red) received ready\n");
-        current_state = READY;
+            // wait for READY
+            red?READY;
+            printf("[in controller] (red) received ready\n");
+            current_state = READY;
 
-        // todo: open
-        inValve_open = true;
-        printf("[in controller] (in valve) opened\n");
+            // open inValve
+            inValve_open = true;
+            printf("[in controller] (in valve) opened\n");
 
-        // send ready ack
-        blue!FILLING;
-        printf("[in controller] (blue) sent filling\n");
+            // notify FILLING
+            blue!FILLING;
+            printf("[in controller] (blue) sent filling\n");
 
-        // receive filling ack
-        blue?FILLING_ACK;
-        printf("[in controller] (blue) received filling ack\n");
+            // receive filling ack
+            blue?FILLING_ACK;
+            printf("[in controller] (blue) received filling ack\n");
 
-        // vessel filled - update state
-        current_state = FILLED;
-        inValve_open = false;
-        printf("[in controller] (in valve) closed\n");
+            // vessel filled - update state
+            current_state = FILLED;
+            inValve_open = false;
+            printf("[in controller] (in valve) closed\n");
+
+        :: else ->
+            // not EMPTY yet - do nothing
+            skip;
+        fi
     od
 }
 
