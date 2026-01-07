@@ -56,7 +56,7 @@ proctype OutValve(chan inflow) {
 
     :: state == OPEN && !empty(inflow) ->
         inflow?liquid;
-        printf("OutValve poured liquid\n")
+        printf("OutValve drains liquid\n")
     od
 }
 
