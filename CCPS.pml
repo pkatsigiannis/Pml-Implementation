@@ -18,11 +18,11 @@ chan in_cmd = [0] of {mtype}; // OPEN / CLOSE
 chan out_cmd = [0] of {mtype}; // OPEN / CLOSE
 
 proctype InValveCtrl() {
-
+  printf("")
 }
 
 proctype OutValveCtrl() {
-
+  printf("")
 }
 
 proctype InValve(chan outflow) {
