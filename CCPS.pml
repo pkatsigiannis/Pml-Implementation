@@ -56,7 +56,7 @@ proctype OutValve(chan inflow) {
         fi 
 
     // If command is OPEN, receive liquid (drain Vessel)
-    :: state == OPEN && !empty(inflow) ->
+    :: state == OPEN && nempty(inflow) ->
         inflow?liquid;
         printf("OutValve drains liquid\n");
     od
