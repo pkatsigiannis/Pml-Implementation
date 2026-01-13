@@ -19,9 +19,52 @@ chan out_cmd = [0] of {mtype}; // OPEN / CLOSE
 
 proctype InValveCtrl() {
 
+    mtype current_state;
+
+    do
+    // send status query
+    :: !(blue?[STATUS_QUERY]) ->
+    printf("[in controller] (blue) sent status query\n");
+
+    // receive status query ack
+    blue?STATUS_QUERY_ACK;
+    printf("[in controller] (blue) received status query ack\n");
+
+    // receive vessel state
+    red?current_state;
+    printf("[in controller] (red) received vessel state: %d\n");
+
+    if // execute immediately - avoid STATUS_QUERY spam
+    :: current_state == EMPTY ->
+        // send filling request
+        blue!REQ_FILLING;
+        printf("[in controller] (blue) sent filling request\n");
+
+        // receive filling request ack
+        blue?REQ_FILLING_ACK;
+        printf("[in controller] (blue) received filling request ack ack\n");
+
+        // wait for READY
+        red?READY;
+        printf("[in controller] (red) received ready\n");
+        current_state = READY;
+
+        // send command OPEN to inValve
+        in_cmd!OPEN;
+        printf("[in controller] (outflow) sent OPEN\n");
+    od
 }
 
 proctype OutValveCtrl() {
+
+    do // Listen for status query
+    :: blue?STATUS_QUERY ->
+        // send status query ack
+        blue!STATUS_QUERY_ACK;
+        printf("[out controller] (blue) sent status query ack\n");
+
+        // ;
+    od
 
 }
 
