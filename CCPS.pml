@@ -33,7 +33,7 @@ proctype InValveCtrl() {
 
             // receive vessel state
             red?current_state;
-            printf("[in controller] (red) received vessel state: %d\n");
+            printf("[in controller] (red) received vessel state: %d\n", current_state);
 
             if // execute immediately - avoid STATUS_QUERY spam
             :: current_state == EMPTY ->
