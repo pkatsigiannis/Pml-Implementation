@@ -43,7 +43,7 @@ proctype InValveCtrl() {
 
                 // receive filling request ack
                 blue?REQ_FILLING_ACK;
-                printf("[in controller] (blue) received filling request ack ack\n");
+                printf("[in controller] (blue) received filling request ack\n");
 
                 // wait for READY
                 red?READY;
