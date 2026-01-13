@@ -50,9 +50,16 @@ proctype InValveCtrl() {
             printf("[in controller] (red) received ready\n");
             current_state = READY;
 
-            // open inValve
-            inValve_open = true;
-            printf("[in controller] (in valve) opened\n");
+            /* This should be handled differently, now that we have InValve() 
+            *  open inValve
+            *  inValve_open = true;
+            *  printf("[in controller] (in valve) opened\n");
+            */
+
+            // PATCH: send cmd OPEN to InValve
+            in_cmd!OPEN;
+            printf("[in controller] (in valve) sent OPEN command\n");
+        
 
             // notify FILLING
             blue!FILLING;
@@ -67,8 +74,8 @@ proctype InValveCtrl() {
 
             // vessel filled - update state
             current_state = FILLED;
-            inValve_open = false;
-            printf("[in controller] (in valve) closed\n");
+            in_cmd!CLOSE; // PATCH: send cmd CLOSE to InValve
+            printf("[in controller] (in valve) sent CLOSE command\n");
 
         :: else ->
             // not EMPTY yet - do nothing
@@ -94,9 +101,15 @@ proctype OutValveCtrl() {
             blue!REQ_FILLING_ACK;
             printf("[out controller] (blue) sent filling request ack\n");
 
-            // todo: close
-            outValve_open = false;
-            printf("[out controller] (out valve) closed\n");
+            /* This should be handled differently, now that we have InValve() 
+            *  // todo: close
+            *  outValve_open = false;
+            *  printf("[out controller] (out valve) closed\n");
+            */
+
+            // PATCH:send cmd CLOSE to OutValve
+            out_cmd!CLOSE;
+            printf("[out controller] (out valve) sent CLOSE command\n");
 
             // send ready
             red!READY;
@@ -113,6 +126,9 @@ proctype OutValveCtrl() {
             red!vessel_state;
             printf("[out controller] (red) sent vessel state: FILLED\n");
 
+        // PATCH: send cmd OPEN to OutValve
+            out_cmd!OPEN;
+            printf("[out controller] (out valve) sent OPEN command\n");
         }
     od
 }
