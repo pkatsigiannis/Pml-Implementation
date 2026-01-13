@@ -1,7 +1,7 @@
 mtype = { // only the msgs described in the handout
     EMPTY, READY, FILLED, // over red channel (OutValveCtrl to InValveCtrl)
-    STATUS_QUERY, STATUS_QUERY_ACK, // over blue channel
-    REQ_FILLING, REQ_FILLING_ACK, // over blue channel
+    STATUS_QUERY, REQ_FILLING, FILLING, // InValveCtrl over blue channel
+    STATUS_QUERY_ACK, REQ_FILLING_ACK, FILLING_ACK // OutValveCtrl over blue channel
     OPEN, CLOSE // over in_cmd channel / out_cmd channel
 };
 
@@ -52,11 +52,25 @@ proctype InValveCtrl() {
             // send command OPEN to inValve
             in_cmd!OPEN;
             printf("[in controller] (outflow) sent OPEN\n");
+
+            // notify FILLING
+            blue!FILLING;
+            printf("[in controller] (blue) sent filling\n");
         fi
+
+        // Listen for FILLED
+        :: red?FILLED ->
+            printf("[in controller] (red) received filled\n");
+
+            // send command CLOSE to inValve
+            in_cmd!CLOSE;
+            printf("[in controller] (outflow) sent CLOSE\n");   
     od
 }
 
 proctype OutValveCtrl() {
+
+    mtype vessel_state = EMPTY;
 
     do // Listen for status query
     :: blue?STATUS_QUERY ->
@@ -64,12 +78,41 @@ proctype OutValveCtrl() {
         blue!STATUS_QUERY_ACK;
         printf("[out controller] (blue) sent status query ack\n");
 
-        // ;
+        // send vessel state
+        red!vessel_state;
+        printf("[out controller] (red) sent vessel state: %d\n", vessel_state);
+
+        // Listen for filling request
+    :: blue?REQ_FILLING ->
+        // send filling request ack
+        blue!REQ_FILLING_ACK;
+        printf("[out controller] (blue) sent filling request ack\n");
+
+        // ensure outValve is closed before filling
+        out_cmd!CLOSE; 
+        printf("[out controller] (inflow) sent CLOSE\n");
+
+        // send READY
+        red!READY;
+        printf("[out controller] (red) sent READY\n");
+        vessel_state = READY;
+
+        // Listen for FILLING
+    :: blue?FILLING ->
+        // send filling ack
+        blue!FILLING_ACK;
+        printf("[out controller] (blue) sent filling ack\n");   
+
+        // vessel filled - send FILLED
+        red!FILLED;
+        printf("[out controller] (red) sent FILLED\n");
+        vessel_state = FILLED;
     od
 
 }
 
 proctype InValve(chan outflow) {
+
     mtype state = CLOSE;
     mtype cmd;
 
@@ -88,6 +131,7 @@ proctype InValve(chan outflow) {
 }
 
 proctype OutValve(chan inflow) {
+
     mtype state = CLOSE;
     mtype cmd;
 
@@ -113,3 +157,6 @@ init {
         run OutValve(Vessel);
     }
 }
+
+// ltl property p1 { [] <> len(Vessel) <= 2 } // Vessel never overflows
+// ltl property p2 { [] <> len(Vessel) == 2 } // Vessel eventually fills up
