@@ -59,8 +59,8 @@ proctype InValveCtrl() {
             // PATCH: send cmd OPEN to InValve
             in_cmd!OPEN;
             printf("[in controller] (in valve) sent OPEN command\n");
-        
 
+            /* WE are not including FILLING and FILLING ACK anymore, as per the handout
             // notify FILLING
             blue!FILLING;
             printf("[in controller] (blue) sent filling\n");
@@ -68,6 +68,7 @@ proctype InValveCtrl() {
             // receive filling ack
             blue?FILLING_ACK;
             printf("[in controller] (blue) received filling ack\n");
+            */
 
             red?FILLED;
             printf("[in controller] (red) received FILLED\n");
@@ -116,11 +117,15 @@ proctype OutValveCtrl() {
             printf("[out controller] (red) sent ready\n");
         }
 
-        :: blue?FILLING -> {
+        /* NO FILLING: We need another way to know when Vessel is filled
+        :: blue?FILLING -> { // NO FILLING: We need another way to know when Vessel is filled
             // send filling ack
-            blue!FILLING_ACK;
+            blue!FILLING_ACK; // Same here: NO FILLING ACK
             printf("[out controller] (blue) sent filling ack\n");
+        */
 
+        // PATCH: new guard - wait for FILLED from InValveCtrl
+        :: red?FILLED -> { 
             // vessel filled - send filled
             vessel_state = FILLED;
             red!vessel_state;
@@ -164,7 +169,7 @@ proctype OutValve(chan inflow) {
         fi 
 
     // If command is OPEN, receive liquid (drain Vessel)
-    :: state == OPEN && nempty(inflow) ->
+    :: state == OPEN && !empty(inflow) ->
         inflow?liquid;
         printf("OutValve drains liquid\n");
     od
