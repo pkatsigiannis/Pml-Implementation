@@ -108,6 +108,14 @@ proctype OutValveCtrl() {
         blue!FILLING_ACK;
         printf("[out controller] (blue) sent filling ack\n");   
 
+        if 
+        :: len(Vessel) == 2 ->
+            // open outValve to drain vessel
+            out_cmd!OPEN;
+            printf("[out controller] (inflow) sent OPEN\n");
+        :: else -> skip;
+        fi
+        
         // vessel filled - send FILLED
         red!FILLED;
         printf("[out controller] (red) sent FILLED\n");
