@@ -57,6 +57,7 @@ proctype InValveCtrl() {
                 // notify FILLING
                 blue!FILLING;
                 printf("[in controller] (blue) sent filling\n");
+            :: else -> skip;
             fi
 
         // receive filling ack
@@ -64,7 +65,7 @@ proctype InValveCtrl() {
             printf("[in controller] (blue) received filling ack\n");    
 
             // Listen for FILLED
-            red?FILLED ->
+            red?FILLED;
             printf("[in controller] (red) received filled\n");
 
             // send command CLOSE to inValve
