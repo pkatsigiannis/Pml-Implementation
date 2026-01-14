@@ -133,7 +133,7 @@ proctype InValve() {
     od
 }
 
-proctype OutValve(chan inflow, chan out_cmd) {
+proctype OutValve() {
 
     mtype state = CLOSE;
     mtype cmd;
@@ -156,7 +156,7 @@ init {
         run InValveCtrl();
         // run OutValveCtrl();
         run InValve();
-        run OutValve(Vessel, Out_cmd);
+        run OutValve();
     }
 }
 
