@@ -117,7 +117,7 @@ proctype OutValveCtrl(chan toOutvalveCtrl, chan fromOutvalveCtrl, chan blue, cha
         printf("[out controller] (blue) sent filling ack\n");   
 
         if 
-        :: len(Vessel) == 2 ->
+        :: len(Vessel) == 2 -> // we don't need '2'; assume always fills to capacity
             // open outValve to drain vessel
             out_cmd!OPEN;
             printf("[out controller] (inflow) sent OPEN\n");
