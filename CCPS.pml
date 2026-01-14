@@ -7,7 +7,7 @@ mtype = {
 };
 
 // as per handout
-#define liquid 1; // liquid as a constant (value irrelevant)
+#define liquid 1 // liquid as a constant (value irrelevant)
 chan Vessel = [2] of {bit};
 
 // controller-to-controller channels
@@ -87,10 +87,10 @@ proctype InValveCtrl() {
                 in_cmd!CLOSE;
                 printf("[in controller] (in_cmd) sent CLOSE\n");
 
-            :: else -> skip // do nothing if not EMPTY
+            :: else -> skip; // do nothing if not EMPTY
             fi
 
-        :: else -> skip // wait for liquid to be reported
+        :: else -> skip; // wait for liquid to be reported
         fi
     od
 }
@@ -129,7 +129,7 @@ proctype InValve() {
         fi
 
     :: state == OPEN && len(outflow) == 0 -> // send liquid if valve is OPEN and outflow is empty
-        outflow!liquid
+        outflow!liquid;
     od
 }
 
