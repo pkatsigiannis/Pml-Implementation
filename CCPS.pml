@@ -157,8 +157,8 @@ proctype OutValveCtrl(chan blue; chan red; chan out_cmd; chan vessel) {
           vessel_state = EMPTY;
 
           // send empty
-          red!vessel_state; 
-          printf("[out controller] state = EMPTY\n");
+          red!EMPTY; 
+          printf("[out controller] (red) sent EMPTY\n");
 
           // close out valve
           out_cmd!CLOSE;
