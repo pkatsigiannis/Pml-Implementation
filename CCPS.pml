@@ -95,11 +95,73 @@ proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan from
     od
 }
 
+proctype OutValveCtrl(chan blue; chan red; chan out_cmd; chan vessel) {
+  mtype vessel_state = EMPTY;
 
+  do
+    :: blue?STATUS_QUERY ->
+      printf("[out controller] (blue) received STATUS_QUERY\n");
 
+      // ack
+      blue!STATUS_QUERY_ACK;
+      printf("[out controller] (blue) sent STATUS_QUERY_ACK\n");
+      
+      // send state
+      red!vessel_state;
+      printf("[out controller] (red) sent state\n");
 
+    :: blue?REQ_FILLING ->
+      printf("[out controller] (blue) received REQ_FILLING\n");
 
+      // ack
+      blue!REQ_FILLING_ACK;
+      printf("[out controller] (blue) sent REQ_FILLING_ACK\n");
+      
+      // close out valve
+      out_cmd!CLOSE;
+      printf("[out controller] (out_cmd) sent CLOSE\n");
 
+      // send READY and update state
+      vessel_state = READY;
+      red!vessel_state;
+      printf("[out controller] (red) sent state\n");
+
+    :: blue?FILLING ->
+      printf("[out controller] (blue) received FILLING\n");
+
+      // ack
+      blue!FILLING_ACK;
+      printf("[out controller] (blue) sent FILLING_ACK\n");
+
+      // send filled
+      vessel_state = FILLED;
+      red!vessel_state;
+      printf("[out controller] (red) sent FILLING_ACK\n");
+
+      do
+        :: len(Vessel) == 1 ->
+          // start draining process
+          printf("[out controller] draining\n");
+
+          // open out valve
+          out_cmd!OPEN;
+          printf("[out controller] (out_cmd) sent OPEN\n");
+
+          vessel_state = EMPTY;
+
+          // send empty
+          red!vessel_state; 
+          printf("[out controller] state = EMPTY\n");
+
+          // close out valve
+          out_cmd!CLOSE;
+          printf("[out controller] (out_cmd) sent CLOSE\n");
+
+          red!ATTENTION;
+          printf("[out controller] (red) sent ATTENTION\n");
+      od
+  od
+}
 
 
 /* 
@@ -154,7 +216,7 @@ init {
     atomic {
         FromInValve!liquid; // assumption: InValve always has liquid (uncontrollable)
         run InValveCtrl(Blue, Red, In_cmd, ToInValve, FromInValve);
-        // run OutValveCtrl();
+        run OutValveCtrl(Blue, Red, Out_cmd, Vessel);
         run InValve(Vessel, In_cmd, FromInValve, ToInValve);
         run OutValve(Vessel, Out_cmd);
     }
