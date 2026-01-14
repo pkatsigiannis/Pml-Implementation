@@ -107,7 +107,7 @@ proctype InValveCtrl() {
     * 1. InValve always holds liquid.
     * 2. only 1 batch is necessary for filling the vessel
 */
-proctype InValve() {
+proctype InValve(chan outflow) {
 
     mtype state = CLOSE;
     mtype cmd;
@@ -128,12 +128,12 @@ proctype InValve() {
         :: else -> skip
         fi
 
-    :: state == OPEN && len(outflow) == 0 -> // send liquid if valve is OPEN and outflow is empty
+    :: state == OPEN && len(outflow) == 00 -> // send liquid if valve is OPEN and outflow is empty
         outflow!liquid;
     od
 }
 
-proctype OutValve() {
+proctype OutValve(chan inflow) {
 
     mtype state = CLOSE;
     mtype cmd;
@@ -155,8 +155,8 @@ init {
         fromInValve!liquid; // assumption: InValve always has liquid (uncontrollable)
         run InValveCtrl();
         // run OutValveCtrl();
-        run InValve();
-        run OutValve();
+        run InValve(Vessel);
+        run OutValve(Vessel);
     }
 }
 
