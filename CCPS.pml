@@ -139,7 +139,7 @@ proctype OutValveCtrl(chan blue; chan red; chan out_cmd; chan vessel) {
       printf("[out controller] (red) sent FILLING_ACK\n");
 
       do
-        :: len(Vessel) == 1 ->
+        :: len(vessel) == 1 ->
           // start draining process
           printf("[out controller] draining\n");
 
