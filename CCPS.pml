@@ -171,5 +171,6 @@ init {
     }
 }
 
-// ltl property p1 { [] <> len(Vessel) <= 2 } // Vessel never overflows
-// ltl property p2 { [] <> len(Vessel) == 2 } // Vessel eventually fills up
+ltl p1 { [] <> len(Vessel) <= 2 } // Vessel never overflows
+ltl p2 { [] <> len(Vessel) == 2 } // Vessel eventually fills up
+ltl p3 { [] <> len(Vessel) == 0 } // Vessel eventually empties
