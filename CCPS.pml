@@ -38,35 +38,59 @@ proctype InValveCtrl(chan blue, chan red, chan in_cmd, chan toInValve, chan from
         printf("[in controller] (toInValve) sent LIQUID_QUERY\n")
 
         if
-        :: fromInValve?[liquid] ->
+        :: fromInValve?[liquid] -> // liquid detected
+            printf("[in controller] (fromInValve) liquid detected\n")
             liquid_detection = false;
 
-            // Query OutValveCtrl for vessel state
+            // send STATUS_QUERY to OutValveCtrl
             blue!STATUS_QUERY;
+            printf("[in controller] (blue) sent STATUS_QUERY\n")
+
+            // wait for STATUS_QUERY_ACK and current_state
             blue?STATUS_QUERY_ACK;
+            printf("[in controller] (blue) received STATUS_QUERY_ACK\n")
+
+            // receive current_state
             red?current_state;
+            printf("[in controller] (red) received current_state: %e\n", current_state);
 
             if
             :: current_state == EMPTY ->
+                // send REQ_FILLING to OutValveCtrl
                 blue!REQ_FILLING;
-                blue?REQ_FILLING_ACK;
+                printf("[in controller] (blue) sent REQ_FILLING\n")
 
+                // wait for REQ_FILLING_ACK
+                blue?REQ_FILLING_ACK;
+                printf("[in controller] (blue) received REQ_FILLING_ACK\n")
+
+                // wait for READY
                 red?READY;
+                printf("[in controller] (red) received READY\n")
 
                 // send command OPEN to InValve
                 in_cmd!OPEN;
+                printf("[in controller] (in_cmd) sent OPEN\n")
 
                 // notify FILLING
                 blue!FILLING;
+                printf("[in controller] (blue) sent FILLING\n")
+
+                // wait for FILLING_ACK
                 blue?FILLING_ACK;
+                printf("[in controller] (blue) received FILLING_ACK\n")
 
                 // wait for FILLED
                 red?FILLED;
+                printf("[in controller] (red) received FILLED\n")
 
                 // send command CLOSE to InValve
                 in_cmd!CLOSE
-            :: else -> skip
+                printf("[in controller] (in_cmd) sent CLOSE\n")
+
+            :: else -> skip // do nothing if not EMPTY
             fi
+            
         :: else -> skip // wait for liquid to be reported
         fi
     od
@@ -84,49 +108,49 @@ proctype InValveCtrl(chan blue, chan red, chan in_cmd, chan toInValve, chan from
     * 1. InValve always holds liquid.
     * 2. only 1 batch is necessary for filling the vessel
 */
-proctype InValve(chan outflow,
-                 chan in_cmd,
-                 chan toInValve, chan fromInValve)
-{
+proctype InValve(chan outflow, chan in_cmd, chan toInValve, chan fromInValve) {
+
     mtype state = CLOSE;
     mtype cmd;
-    mtype q;
+    mtype query;
 
     do
-    :: in_cmd?cmd ->
-        if
+    :: in_cmd?cmd -> // listen for command
+        if 
         :: cmd == OPEN  -> state = OPEN
         :: cmd == CLOSE -> state = CLOSE
         fi
 
-    :: toInValve?q ->
+    :: toInValve?query -> // listen for query
         if
-        :: q == LIQUID_QUERY ->
+        :: query == LIQUID_QUERY ->
             if
-            :: len(fromInValve) == 0 -> fromInValve!liquid
+            :: len(fromInValve) == 0 -> fromInValve!liquid; // assumption: InValve always holds liquid
+                printf("[InValve] reported liquid present\n");
+
             :: else -> skip
             fi
         :: else -> skip
         fi
 
-    :: state == OPEN && len(outflow) == 0 ->
+    :: state == OPEN && len(outflow) == 0 -> // send liquid if valve is OPEN and outflow is empty
         outflow!liquid
     od
 }
 
-proctype OutValve(chan inflow, chan out_cmd)
-{
+proctype OutValve(chan inflow, chan out_cmd) {
+
     mtype state = CLOSE;
     mtype cmd;
 
     do
-    :: out_cmd?cmd ->
+    :: out_cmd?cmd -> // listen for command
         if
         :: cmd == OPEN  -> state = OPEN
         :: cmd == CLOSE -> state = CLOSE
         fi
 
-    :: state == OPEN && len(inflow) > 0 ->
+    :: state == OPEN && len(inflow) > 0 -> // pour liquid if valve is OPEN and inflow channel has liquid
         inflow?liquid
     od
 }
