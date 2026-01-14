@@ -3,7 +3,7 @@ mtype = { // only the msgs described in the handout
     STATUS_QUERY, REQ_FILLING, FILLING, // InValveCtrl over blue channel
     STATUS_QUERY_ACK, REQ_FILLING_ACK, FILLING_ACK, // OutValveCtrl over blue channel
     OPEN, CLOSE // over in_cmd channel / out_cmd channel
-};
+}; // perhaps, additional msgs for valve - controller communication
 
 // as per Listing 1
 #define liquid 1; // liquid as a constant (value irrelevant)
