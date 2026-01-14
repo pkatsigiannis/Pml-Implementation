@@ -131,7 +131,7 @@ proctype OutValveCtrl(chan blue; chan red; chan out_cmd; chan vessel) {
       // send READY and update state
       vessel_state = READY;
       red!vessel_state;
-      printf("[out controller] (red) sent state\n");
+      printf("[out controller] (red) sent READY\n");
 
     :: blue?FILLING ->
       printf("[out controller] (blue) received FILLING\n");
