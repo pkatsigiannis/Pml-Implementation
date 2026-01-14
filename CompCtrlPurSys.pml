@@ -17,7 +17,14 @@ chan red = [2] of {mtype};
 chan in_cmd = [0] of {mtype}; // OPEN / CLOSE
 chan out_cmd = [0] of {mtype}; // OPEN / CLOSE
 
-proctype InValveCtrl() {
+// We need additional channels for valve to controller communication
+// Valves should always be ready to report liquid status and receive commands
+chan fromInvalveCtrl = [2] of {mtype}; // from InValve to InValveCtrl
+chan toInvalveCtrl = [2] of {mtype}; // to InValve from InValveCtrl
+chan toOutvalveCtrl = [2] of {mtype}; // to OutValve to OutValveCtrl
+chan fromOutvalveCtrl = [2] of {mtype}; // from OutValve from OutValveCtrl
+
+proctype InValveCtrl(chan toInvalveCtrl, chan fromInvalveCtrl, chan blue, chan red, chan in_cmd) {
 
     mtype current_state;
 
@@ -74,7 +81,7 @@ proctype InValveCtrl() {
     od
 }
 
-proctype OutValveCtrl() {
+proctype OutValveCtrl(chan toOutvalveCtrl, chan fromOutvalveCtrl, chan blue, chan red, chan out_cmd) {
 
     mtype vessel_state = EMPTY;
 
@@ -116,7 +123,7 @@ proctype OutValveCtrl() {
             printf("[out controller] (inflow) sent OPEN\n");
 
             // vessel filled - send FILLED
-            red!FILLED;
+            red!FILLED; // no - notify inValveCtrl over blue that the OutValve is closed => InValve can stop filling (close InValve)
             printf("[out controller] (red) sent FILLED\n");
             vessel_state = FILLED;
         :: else -> skip;
@@ -124,12 +131,13 @@ proctype OutValveCtrl() {
     od
 }
 
-proctype InValve(chan outflow) {
+proctype InValve(chan outflow, chan toInvalveCtrl, chan fromInvalveCtrl) {
 
     mtype state = CLOSE;
     mtype cmd;
 
     do 
+    :: 
     :: in_cmd?cmd -> // listen for commands
         if 
         :: cmd == OPEN -> state = OPEN;
@@ -143,7 +151,7 @@ proctype InValve(chan outflow) {
     od
 }
 
-proctype OutValve(chan inflow) {
+proctype OutValve(chan inflow, chan toOutvalveCtrl, chan fromOutvalveCtrl) {
 
     mtype state = CLOSE;
     mtype cmd;
