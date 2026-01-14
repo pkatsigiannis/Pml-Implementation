@@ -157,8 +157,8 @@ proctype OutValveCtrl(chan blue; chan red; chan out_cmd; chan vessel) {
           out_cmd!CLOSE;
           printf("[out controller] (out_cmd) sent CLOSE\n");
 
-          red!ATTENTION;
-          printf("[out controller] (red) sent ATTENTION\n");
+          blue!ATTENTION;
+          printf("[out controller] (blue) sent ATTENTION\n");
       od
   od
 }
