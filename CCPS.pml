@@ -24,13 +24,12 @@ chan fromInValve = [1] of {bit}; // InValve reports to InValveCtrl
 proctype InValveCtrl(chan blue, chan red, chan in_cmd, chan toInValve, chan fromInValve) {
 
     mtype current_state;
-    mtype q;
+    mtype query;
     bool liquid_detection = true;
 
     do
-    :: liquid_detection && !toInValve?[LIQUID_QUERY] -> // listen for ATTENTION
-        // allow new start after purification process ends
-        liquid_detection = true // ON at start
+    :: blue?ATTENTION -> // respond to attention: allow new start after purification process ends
+    liquid_detection = true; // ON at start
 
     :: liquid_detection ->
         // query InValve for liquid
