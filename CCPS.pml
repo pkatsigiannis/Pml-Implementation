@@ -128,7 +128,7 @@ proctype InValve(chan outflow) {
         :: else -> skip
         fi
 
-    :: state == OPEN && len(outflow) == 00 -> // send liquid if valve is OPEN and outflow is empty
+    :: state == OPEN && len(outflow) == 0 -> // send liquid if valve is OPEN and outflow is empty
         outflow!liquid;
     od
 }
