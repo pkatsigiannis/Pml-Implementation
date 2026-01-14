@@ -11,17 +11,17 @@ mtype = {
 chan Vessel = [2] of {bit};
 
 // controller-to-controller channels
-chan blue = [2] of {mtype};
-chan red  = [2] of {mtype};
+chan Blue = [2] of {mtype};
+chan Red  = [2] of {mtype};
 
 // local valve command channels (sync/unbuffered)
-chan in_cmd  = [0] of {mtype};
-chan out_cmd = [0] of {mtype};
+chan In_cmd  = [0] of {mtype};
+chan Out_cmd = [0] of {mtype};
 
-chan toInValve = [0] of {mtype}; // InValveCtrl queries InValve
-chan fromInValve = [1] of {bit}; // InValve reports to InValveCtrl
+chan ToInValve = [0] of {mtype}; // InValveCtrl queries InValve
+chan FromInValve = [1] of {bit}; // InValve reports to InValveCtrl
 
-proctype InValveCtrl() {
+proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan fromInValve) {
 
     mtype current_state;
     mtype query;
@@ -107,7 +107,7 @@ proctype InValveCtrl() {
     * 1. InValve always holds liquid.
     * 2. only 1 batch is necessary for filling the vessel
 */
-proctype InValve(chan outflow) {
+proctype InValve(chan outflow; chan in_cmd; chan toInValve; chan fromInValve) {
 
     mtype state = CLOSE;
     mtype cmd;
@@ -133,7 +133,7 @@ proctype InValve(chan outflow) {
     od
 }
 
-proctype OutValve(chan inflow) {
+proctype OutValve(chan inflow; chan out_cmd) {
 
     mtype state = CLOSE;
     mtype cmd;
@@ -152,11 +152,11 @@ proctype OutValve(chan inflow) {
 
 init {
     atomic {
-        fromInValve!liquid; // assumption: InValve always has liquid (uncontrollable)
-        run InValveCtrl();
+        FromInValve!liquid; // assumption: InValve always has liquid (uncontrollable)
+        run InValveCtrl(Blue, Red, In_cmd, ToInValve, FromInValve);
         // run OutValveCtrl();
-        run InValve(Vessel);
-        run OutValve(Vessel);
+        run InValve(Vessel, In_cmd, FromInValve, ToInValve);
+        run OutValve(Vessel, Out_cmd);
     }
 }
 
