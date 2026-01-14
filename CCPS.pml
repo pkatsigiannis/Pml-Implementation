@@ -22,8 +22,8 @@ proctype InValveCtrl() {
     mtype current_state;
 
     do
-        // send status query
-        :: !(blue?[STATUS_QUERY]) ->
+        :: !(blue?[STATUS_QUERY]) -> // avoid duplicates
+            // send status query
             blue!STATUS_QUERY;
             printf("[in controller] (blue) sent status query\n");
 
@@ -64,7 +64,7 @@ proctype InValveCtrl() {
         :: blue?FILLING_ACK ->
             printf("[in controller] (blue) received filling ack\n");    
 
-            // Listen for FILLED
+            // listen for FILLED
             red?FILLED;
             printf("[in controller] (red) received filled\n");
 
@@ -78,7 +78,7 @@ proctype OutValveCtrl() {
 
     mtype vessel_state = EMPTY;
 
-    do // Listen for status query
+    do // listen for status query
     :: blue?STATUS_QUERY ->
         // send status query ack
         blue!STATUS_QUERY_ACK;
@@ -88,7 +88,7 @@ proctype OutValveCtrl() {
         red!vessel_state;
         printf("[out controller] (red) sent vessel state: %d\n", vessel_state);
 
-        // Listen for filling request
+        // listen for filling request
     :: blue?REQ_FILLING ->
         // send filling request ack
         blue!REQ_FILLING_ACK;
@@ -103,7 +103,7 @@ proctype OutValveCtrl() {
         printf("[out controller] (red) sent READY\n");
         vessel_state = READY;
 
-        // Listen for FILLING
+        // listen for FILLING
     :: blue?FILLING ->
         // send filling ack
         blue!FILLING_ACK;
@@ -121,10 +121,7 @@ proctype OutValveCtrl() {
             vessel_state = FILLED;
         :: else -> skip;
         fi
-
-
     od
-
 }
 
 proctype InValve(chan outflow) {
@@ -133,13 +130,13 @@ proctype InValve(chan outflow) {
     mtype cmd;
 
     do 
-    :: in_cmd?cmd -> // Listen for commands
+    :: in_cmd?cmd -> // listen for commands
         if 
         :: cmd == OPEN -> state = OPEN;
         :: cmd == CLOSE -> state = CLOSE;
         fi
 
-    // Send (pour) liquid if valve is OPEN and outflow channel is not full (outflow == Vessel)
+    // send (pour) liquid if valve is OPEN and outflow channel is not full (outflow == Vessel)
     :: state == OPEN && nfull(outflow) ->
         outflow!liquid;
         printf("InValve sent liquid\n");
@@ -152,13 +149,13 @@ proctype OutValve(chan inflow) {
     mtype cmd;
 
     do 
-    :: out_cmd?cmd -> // Listen for commands
+    :: out_cmd?cmd -> // listen for commands
         if
         :: cmd == OPEN -> state = OPEN;
         :: cmd == CLOSE -> state = CLOSE;
         fi 
 
-    // Receive (drain) liquid if valve is OPEN and inflow channel is not empty (inflow == Vessel)
+    // receive (drain) liquid if valve is OPEN and inflow channel is not empty (inflow == Vessel)
     :: state == OPEN && nempty(inflow) ->
         inflow?liquid;
         printf("OutValve drains liquid\n");
