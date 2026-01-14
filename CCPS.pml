@@ -21,7 +21,7 @@ chan out_cmd = [0] of {mtype};
 chan toInValve = [0] of {mtype}; // InValveCtrl queries InValve
 chan fromInValve = [1] of {bit}; // InValve reports to InValveCtrl
 
-proctype InValveCtrl(chan blue, chan red, chan in_cmd, chan toInValve, chan fromInValve) {
+proctype InValveCtrl() {
 
     mtype current_state;
     mtype query;
@@ -153,10 +153,10 @@ proctype OutValve(chan inflow, chan out_cmd) {
 init {
     atomic {
         fromInValve!liquid; // assumption: InValve always has liquid (uncontrollable)
-        run InValveCtrl(blue, red, in_cmd, toInValve, fromInValve);
-        run OutValveCtrl(blue, red, out_cmd);
-        run InValve(Vessel, in_cmd, toInValve, fromInValve);
-        run OutValve(Vessel, out_cmd);
+        run InValveCtrl();
+        // run OutValveCtrl();
+        run InValve(Vessel, In_cmd, toInValve, fromInValve);
+        run OutValve(Vessel, Out_cmd);
     }
 }
 
