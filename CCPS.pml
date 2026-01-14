@@ -24,7 +24,6 @@ chan FromInValve = [1] of {bit}; // InValve reports to InValveCtrl
 proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan fromInValve) {
 
     mtype current_state;
-    mtype query;
     bool liquid_detection = true;
 
     do
@@ -32,9 +31,13 @@ proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan from
     liquid_detection = true; // ON at start
 
     :: liquid_detection ->
-        // query InValve for liquid
-        toInValve!LIQUID_QUERY;
-        printf("[in controller] (toInValve) sent LIQUID_QUERY\n");
+        /* Only query if we DON'T already see a report token */
+        if
+        :: !fromInValve?[liquid] ->
+            toInValve!LIQUID_QUERY;
+            printf("[in controller] (toInValve) sent LIQUID_QUERY\n");
+        :: else -> skip
+        fi;
 
         if
         :: fromInValve?[liquid] -> // peek for liquid (token not consumed)
@@ -173,7 +176,6 @@ proctype InValve(chan outflow; chan in_cmd; chan toInValve; chan fromInValve) {
 
     mtype state = CLOSE;
     mtype cmd;
-    mtype query;
 
     do
     :: in_cmd?cmd -> // listen for command
