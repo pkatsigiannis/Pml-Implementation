@@ -1,7 +1,7 @@
 mtype = { // only the msgs described in the handout
     EMPTY, READY, FILLED, // over red channel (OutValveCtrl to InValveCtrl)
     STATUS_QUERY, REQ_FILLING, FILLING, // InValveCtrl over blue channel
-    STATUS_QUERY_ACK, REQ_FILLING_ACK, FILLING_ACK // OutValveCtrl over blue channel
+    STATUS_QUERY_ACK, REQ_FILLING_ACK, FILLING_ACK, // OutValveCtrl over blue channel
     OPEN, CLOSE // over in_cmd channel / out_cmd channel
 };
 
