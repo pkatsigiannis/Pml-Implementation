@@ -134,16 +134,20 @@ proctype OutValveCtrl(chan blue; chan red; chan out_cmd; chan vessel) {
       printf("[out controller] (red) sent READY\n");
 
     :: blue?FILLING ->
-      printf("[out controller] (blue) received FILLING\n");
+        printf("[out controller] (blue) received FILLING\n");
+        
+        // ack
+        blue!FILLING_ACK;
+        printf("[out controller] (blue) sent FILLING_ACK\n");
 
-      // ack
-      blue!FILLING_ACK;
-      printf("[out controller] (blue) sent FILLING_ACK\n");
-
-      // send filled
-      vessel_state = FILLED;
-      red!vessel_state;
-      printf("[out controller] (red) sent FILLING_ACK\n");
+         do 
+         :: len(vessel) == 1 -> break; // wait until vessel is filled
+         od;
+         
+        // send filled
+        vessel_state = FILLED;
+        red!FILLED;
+        printf("[out controller] (red) sent FILLED\n");
 
       do
         :: len(vessel) == 1 ->
