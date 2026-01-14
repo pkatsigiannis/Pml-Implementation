@@ -45,8 +45,12 @@ proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan from
             liquid_detection = false;
 
             // send STATUS_QUERY to OutValveCtrl
-            blue!STATUS_QUERY;
-            printf("[in controller] (blue) sent STATUS_QUERY\n");
+            if 
+            :: !(blue?[STATUS_QUERY]) ->
+                blue!STATUS_QUERY;
+                printf("[in controller] (blue) sent STATUS_QUERY\n");
+            :: else -> skip; // avoid duplicates
+            fi
 
             // wait for STATUS_QUERY_ACK and current_state
             blue?STATUS_QUERY_ACK;
