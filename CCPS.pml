@@ -73,6 +73,10 @@ proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan from
             red?FILLED;
             printf("[in controller] (red) received filled\n");
 
+            red?EMPTY;
+            printf("[in controller] (red) received empty\n");
+
+
             in_cmd!CLOSE;
             printf("[in controller] (outflow) sent CLOSE\n");
         :: else -> skip
