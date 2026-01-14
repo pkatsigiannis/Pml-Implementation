@@ -35,7 +35,7 @@ proctype InValveCtrl() {
             red?current_state;
             printf("[in controller] (red) received vessel state: %d\n", current_state);
 
-            if // execute immediately - avoid STATUS_QUERY spam
+            if // proceed to FILLING if Vessel is EMPTY; else skip to prevent blocking
             :: current_state == EMPTY ->
                 // send filling request
                 blue!REQ_FILLING;
