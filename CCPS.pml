@@ -28,69 +28,69 @@ proctype InValveCtrl(chan blue, chan red, chan in_cmd, chan toInValve, chan from
     bool liquid_detection = true;
 
     do
-    :: blue?ATTENTION -> // listen for ATTENTION
+    :: liquid_detection && !toInValve?[LIQUID_QUERY] -> // listen for ATTENTION
         // allow new start after purification process ends
         liquid_detection = true // ON at start
 
     :: liquid_detection ->
         // query InValve for liquid
         toInValve!LIQUID_QUERY;
-        printf("[in controller] (toInValve) sent LIQUID_QUERY\n")
+        printf("[in controller] (toInValve) sent LIQUID_QUERY\n");
 
         if
-        :: fromInValve?[liquid] -> // liquid detected
-            printf("[in controller] (fromInValve) liquid detected\n")
+        :: fromInValve?[liquid] -> // peek for liquid (token not consumed)
+            printf("[in controller] (fromInValve) liquid detected\n");
             liquid_detection = false;
 
             // send STATUS_QUERY to OutValveCtrl
             blue!STATUS_QUERY;
-            printf("[in controller] (blue) sent STATUS_QUERY\n")
+            printf("[in controller] (blue) sent STATUS_QUERY\n");
 
             // wait for STATUS_QUERY_ACK and current_state
             blue?STATUS_QUERY_ACK;
-            printf("[in controller] (blue) received STATUS_QUERY_ACK\n")
+            printf("[in controller] (blue) received STATUS_QUERY_ACK\n");
 
             // receive current_state
             red?current_state;
-            printf("[in controller] (red) received current_state: %e\n", current_state);
+            printf("[in controller] (red) received current_state: %d\n", current_state);
 
             if
             :: current_state == EMPTY ->
                 // send REQ_FILLING to OutValveCtrl
                 blue!REQ_FILLING;
-                printf("[in controller] (blue) sent REQ_FILLING\n")
+                printf("[in controller] (blue) sent REQ_FILLING\n");
 
                 // wait for REQ_FILLING_ACK
                 blue?REQ_FILLING_ACK;
-                printf("[in controller] (blue) received REQ_FILLING_ACK\n")
+                printf("[in controller] (blue) received REQ_FILLING_ACK\n");
 
                 // wait for READY
                 red?READY;
-                printf("[in controller] (red) received READY\n")
+                printf("[in controller] (red) received READY\n");
 
                 // send command OPEN to InValve
                 in_cmd!OPEN;
-                printf("[in controller] (in_cmd) sent OPEN\n")
+                printf("[in controller] (in_cmd) sent OPEN\n");
 
                 // notify FILLING
                 blue!FILLING;
-                printf("[in controller] (blue) sent FILLING\n")
+                printf("[in controller] (blue) sent FILLING\n");
 
                 // wait for FILLING_ACK
                 blue?FILLING_ACK;
-                printf("[in controller] (blue) received FILLING_ACK\n")
+                printf("[in controller] (blue) received FILLING_ACK\n");
 
                 // wait for FILLED
                 red?FILLED;
-                printf("[in controller] (red) received FILLED\n")
+                printf("[in controller] (red) received FILLED\n");
 
                 // send command CLOSE to InValve
-                in_cmd!CLOSE
-                printf("[in controller] (in_cmd) sent CLOSE\n")
+                in_cmd!CLOSE;
+                printf("[in controller] (in_cmd) sent CLOSE\n");
 
             :: else -> skip // do nothing if not EMPTY
             fi
-            
+
         :: else -> skip // wait for liquid to be reported
         fi
     od
@@ -121,15 +121,11 @@ proctype InValve(chan outflow, chan in_cmd, chan toInValve, chan fromInValve) {
         :: cmd == CLOSE -> state = CLOSE
         fi
 
-    :: toInValve?query -> // listen for query
+    :: toInValve?LIQUID_QUERY -> // listen for liquid query
         if
-        :: query == LIQUID_QUERY ->
-            if
-            :: len(fromInValve) == 0 -> fromInValve!liquid; // assumption: InValve always holds liquid
-                printf("[InValve] reported liquid present\n");
-
-            :: else -> skip
-            fi
+        :: len(fromInValve) == 0 -> 
+            fromInValve!liquid; //assumption: InValve always has liquid
+            printf("[InValve] reported liquid present\n");
         :: else -> skip
         fi
 
@@ -164,5 +160,5 @@ init {
     }
 }
 
-ltl p_fill {[] <> (len(Vessel) == 1)} // Vessel is eventually filled
-ltl p_empty {[] <> (len(Vessel) == 0)} // Vessel is eventually emptied
+ltl p1 {[] <> (len(Vessel) == 1)} // Vessel is eventually filled
+ltl p2 {[] <> (len(Vessel) == 0)} // Vessel is eventually emptied
