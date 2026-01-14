@@ -107,7 +107,7 @@ proctype InValveCtrl() {
     * 1. InValve always holds liquid.
     * 2. only 1 batch is necessary for filling the vessel
 */
-proctype InValve(chan outflow, chan in_cmd, chan toInValve, chan fromInValve) {
+proctype InValve() {
 
     mtype state = CLOSE;
     mtype cmd;
@@ -155,7 +155,7 @@ init {
         fromInValve!liquid; // assumption: InValve always has liquid (uncontrollable)
         run InValveCtrl();
         // run OutValveCtrl();
-        run InValve(Vessel, In_cmd, toInValve, fromInValve);
+        run InValve();
         run OutValve(Vessel, Out_cmd);
     }
 }
