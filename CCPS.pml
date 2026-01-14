@@ -33,7 +33,7 @@ proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan from
     :: liquid_detection ->
         /* Only query if we DON'T already see a report token */
         if
-        :: !fromInValve?[liquid] ->
+        :: !(fromInValve?[liquid]) ->
             toInValve!LIQUID_QUERY;
             printf("[in controller] (toInValve) sent LIQUID_QUERY\n");
         :: else -> skip
