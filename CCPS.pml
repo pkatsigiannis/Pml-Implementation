@@ -153,6 +153,7 @@ proctype OutValve(chan inflow, chan out_cmd) {
 
 init {
     atomic {
+        fromInValve!liquid; // assumption: InValve always has liquid (uncontrollable)
         run InValveCtrl(blue, red, in_cmd, toInValve, fromInValve);
         run OutValveCtrl(blue, red, out_cmd);
         run InValve(Vessel, in_cmd, toInValve, fromInValve);
