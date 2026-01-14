@@ -14,7 +14,7 @@ chan Vessel = [2] of {bit};
 chan Blue = [2] of {mtype};
 chan Red = [2] of {mtype};
 
-// local valve command channels (sync/unbuffered)
+// controller-to-valve command channels (synchronous / unbuffered)
 chan In_cmd = [0] of {mtype};
 chan Out_cmd = [0] of {mtype};
 
@@ -180,8 +180,8 @@ proctype InValve(chan outflow; chan in_cmd; chan toInValve; chan fromInValve)
     od
 }
 
-proctype OutValve(chan inflow; chan out_cmd)
-{
+proctype OutValve(chan inflow; chan out_cmd) {
+    
     mtype state = CLOSE;
     mtype cmd;
 
