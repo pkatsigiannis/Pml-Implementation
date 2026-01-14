@@ -12,13 +12,13 @@ chan Vessel = [2] of {bit};
 
 // controller-to-controller channels
 chan Blue = [2] of {mtype};
-chan Red  = [2] of {mtype};
+chan Red = [2] of {mtype};
 
 // local valve command channels (sync/unbuffered)
-chan In_cmd  = [0] of {mtype};
+chan In_cmd = [0] of {mtype};
 chan Out_cmd = [0] of {mtype};
 
-chan ToInValve = [0] of {mtype}; // InValveCtrl queries InValve
+chan ToInValve = [1] of {mtype}; // InValveCtrl queries InValve
 chan FromInValve = [1] of {bit}; // InValve reports to InValveCtrl
 
 proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan fromInValve) {
@@ -28,7 +28,7 @@ proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan from
 
     do
     :: blue?ATTENTION -> // respond to attention: allow new start after purification process ends
-    liquid_detection = true; // ON at start
+        liquid_detection = true; // ON at start
 
     :: liquid_detection ->
         /* Only query if we DON'T already see a report token */
@@ -219,7 +219,7 @@ init {
         FromInValve!liquid; // assumption: InValve always has liquid (uncontrollable)
         run InValveCtrl(Blue, Red, In_cmd, ToInValve, FromInValve);
         run OutValveCtrl(Blue, Red, Out_cmd, Vessel);
-        run InValve(Vessel, In_cmd, FromInValve, ToInValve);
+        run InValve(Vessel, In_cmd, ToInValve, FromInValve);
         run OutValve(Vessel, Out_cmd);
     }
 }
