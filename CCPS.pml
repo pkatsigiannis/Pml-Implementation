@@ -18,20 +18,21 @@ chan Red = [2] of {mtype};
 chan In_cmd = [0] of {mtype};
 chan Out_cmd = [0] of {mtype};
 
-chan ToInValve = [0] of {mtype}; // InValveCtrl queries InValve
+chan ToInValve = [0] of {mtype}; // from InValveCtrl to InValve (sync): prevent queueing of LIQUID_QUERY requests
 chan FromInValve = [1] of {bit}; // InValve reports to InValveCtrl
 
 proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan fromInValve) {
 
     mtype current_state;
-    bool liquid_detection = true;
+    bool liquid_detection = true; // ON at start
 
-    do
-    :: blue?ATTENTION ->
-        liquid_detection = true
+    do 
+    :: blue?ATTENTION -> // receive alert from OutValveCtrl
+        liquid_detection = true;
+        printf("[in controller] (blue) received ATTENTION\n");
 
     :: liquid_detection ->
-        /* Real query: request then wait for reply (consumes reply token) */
+        // request a liquid report from InValve
         toInValve!LIQUID_QUERY;
         printf("[in controller] sent LIQUID_QUERY\n");
 
@@ -40,7 +41,7 @@ proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan from
 
         liquid_detection = false;
 
-        /* protocol with OutValveCtrl */
+        // ------ protocol with OutValveCtrl ------ //
         blue!STATUS_QUERY;
         printf("[in controller] (blue) sent status query\n");
 
@@ -51,7 +52,7 @@ proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan from
         printf("[in controller] (red) received vessel state: %d\n", current_state);
 
         if
-        :: current_state == EMPTY ->
+        :: current_state == EMPTY -> // start filling cycle only if vessel is EMPTY
             blue!REQ_FILLING;
             printf("[in controller] (blue) sent filling request\n");
 
@@ -62,7 +63,7 @@ proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan from
             printf("[in controller] (red) received ready\n");
 
             in_cmd!OPEN;
-            printf("[in controller] (outflow) sent OPEN\n");
+            printf("[in controller] (in_cmd) sent OPEN\n");
 
             blue!FILLING;
             printf("[in controller] (blue) sent filling\n");
@@ -73,12 +74,13 @@ proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan from
             red?FILLED;
             printf("[in controller] (red) received filled\n");
 
+            // consume EMPTY so it doesn't remain queued on red and block the next READY
             red?EMPTY;
             printf("[in controller] (red) received empty\n");
 
 
             in_cmd!CLOSE;
-            printf("[in controller] (outflow) sent CLOSE\n");
+            printf("[in controller] (in_cmd) sent CLOSE\n");
         :: else -> skip
         fi
     od
@@ -118,10 +120,10 @@ proctype OutValveCtrl(chan blue; chan red; chan out_cmd; chan vessel) {
         blue!FILLING_ACK;
         printf("[out controller] (blue) sent filling ack\n");
 
-        /* wait until the one batch appears */
+        // wait until vessel is filled
         do
         :: len(vessel) == 1 -> break
-        :: else -> skip
+        :: else -> skip 
         od;
 
         vessel_state = FILLED;
@@ -129,10 +131,10 @@ proctype OutValveCtrl(chan blue; chan red; chan out_cmd; chan vessel) {
         red!FILLED;
         printf("[out controller] (red) sent FILLED\n");
 
-        /* drain: open, wait until empty, close */
         out_cmd!OPEN;
         printf("[out controller] (outflow) sent OPEN\n");
 
+        // wait until vessel is emptied
         do
         :: len(vessel) == 0 -> break
         :: else -> skip
@@ -145,6 +147,7 @@ proctype OutValveCtrl(chan blue; chan red; chan out_cmd; chan vessel) {
         red!EMPTY;
         printf("[out controller] (red) sent EMPTY\n");
 
+        // notify InValveCtrl that emptying is done
         blue!ATTENTION;
         printf("[out controller] (blue) sent ATTENTION\n");
     od
@@ -154,8 +157,6 @@ proctype OutValveCtrl(chan blue; chan red; chan out_cmd; chan vessel) {
  * Assumptions:
  * 1) InValve always holds liquid.
  * 2) Only 1 batch is necessary for filling the vessel.
- *
- * Implementation: it ALWAYS replies 'liquid' to every LIQUID_QUERY.
  */
 proctype InValve(chan outflow; chan in_cmd; chan toInValve; chan fromInValve)
 {
@@ -163,14 +164,14 @@ proctype InValve(chan outflow; chan in_cmd; chan toInValve; chan fromInValve)
     mtype cmd;
 
     do
-    :: in_cmd?cmd ->
+    :: in_cmd?cmd -> // listen for commands
         if
         :: cmd == OPEN  -> state = OPEN
         :: cmd == CLOSE -> state = CLOSE
         fi
 
     :: toInValve?LIQUID_QUERY ->
-        /* always report liquid */
+        // assumption: InValve always holds liquid 
         fromInValve!liquid;
         printf("[InValve] replied liquid\n");
 
@@ -185,12 +186,13 @@ proctype OutValve(chan inflow; chan out_cmd)
     mtype cmd;
 
     do
-    :: out_cmd?cmd ->
+    :: out_cmd?cmd -> // listen for commands
         if
         :: cmd == OPEN  -> state = OPEN
         :: cmd == CLOSE -> state = CLOSE
         fi
 
+    // drain liquid when OutValve is OPEN and there is liquid in the vessel
     :: state == OPEN && len(inflow) > 0 ->
         inflow?liquid
     od
@@ -205,5 +207,5 @@ init {
     }
 }
 
-ltl p1 {[] <> (len(Vessel) == 1)} // Vessel is eventually filled
-ltl p2 {[] <> (len(Vessel) == 0)} // Vessel is eventually emptied
+ltl p1 {[] <> (len(Vessel) == 1)} // Vessel is always eventually filled
+ltl p2 {[] <> (len(Vessel) == 0)} // Vessel is always eventually emptied
