@@ -73,7 +73,7 @@ proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan from
             red?FILLED;
             printf("[in controller] (red) received filled\n");
 
-            in_cmd!CLOSE
+            in_cmd!CLOSE;
             printf("[in controller] (outflow) sent CLOSE\n");
         :: else -> skip
         fi
@@ -141,7 +141,7 @@ proctype OutValveCtrl(chan blue; chan red; chan out_cmd; chan vessel) {
         red!EMPTY;
         printf("[out controller] (red) sent EMPTY\n");
 
-        blue!ATTENTION
+        blue!ATTENTION;
         printf("[out controller] (blue) sent ATTENTION\n");
     od
 }
