@@ -157,8 +157,8 @@ proctype OutValveCtrl(chan blue; chan red; chan out_cmd; chan vessel) {
  * 1) InValve always holds liquid.
  * 2) Only 1 batch is necessary for filling the vessel.
  */
-proctype InValve(chan outflow; chan in_cmd; chan toInValve; chan fromInValve)
-{
+proctype InValve(chan outflow; chan in_cmd; chan toInValve; chan fromInValve) {
+
     mtype state = CLOSE;
     mtype cmd;
 
@@ -197,8 +197,8 @@ proctype OutValve(chan inflow; chan out_cmd) {
     od
 }
 
-init{
-    atomic{ // create all processes before any can be executed
+init {
+    atomic { // create all processes before any can be executed
         run InValveCtrl(Blue, Red, In_cmd, ToInValve, FromInValve);
         run OutValveCtrl(Blue, Red, Out_cmd, Vessel);
         run InValve(Vessel, In_cmd, ToInValve, FromInValve);
