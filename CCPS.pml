@@ -39,7 +39,7 @@ proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan from
         fromInValve?liquid;
         printf("[in controller] received LIQUID report\n");
 
-        liquid_detection = false;
+        liquid_detection = false; // turn OFF until next ATTENTION
 
         // ------ protocol with OutValveCtrl ------ //
         blue!STATUS_QUERY;
