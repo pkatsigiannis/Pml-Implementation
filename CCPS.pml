@@ -1,9 +1,9 @@
 mtype = {
-    EMPTY, READY, FILLED, // vessel state from OutValveCtrl to InValveCtrl over red channel
-    STATUS_QUERY, REQ_FILLING, FILLING, // from InValveCtrl to OutValveCtrl over blue channel
-    STATUS_QUERY_ACK, REQ_FILLING_ACK, FILLING_ACK, ATTENTION, // from OutValveCtrl to InValveCtrl over blue channel
-    OPEN, CLOSE, // commands from controllers to valves over out_cmd and in_cmd channels
-    LIQUID_QUERY // from InValveCtrl to InValve
+    EMPTY, READY, FILLED, // vessel_state notifications (OutValveCtrl -> InValveCtrl) over Red channel
+    STATUS_QUERY, REQ_FILLING, FILLING, // from InValveCtrl to OutValveCtrl over Blue channel
+    STATUS_QUERY_ACK, REQ_FILLING_ACK, FILLING_ACK, ATTENTION, // from OutValveCtrl to InValveCtrl over Blue channel
+    OPEN, CLOSE, // commands from controllers to valves over Out_cmd and In_cmd channels
+    LIQUID_QUERY // query message (InValveCtrl -> InValve) - reply comes via FromInValve channel
 };
 
 // as per handout
@@ -61,6 +61,7 @@ proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan from
 
             red?READY;
             printf("[in controller] (red) received ready\n");
+            current_state = READY; // keep a local view of phase for debugging
 
             in_cmd!OPEN;
             printf("[in controller] (in_cmd) sent OPEN\n");
@@ -73,11 +74,11 @@ proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan from
 
             red?FILLED;
             printf("[in controller] (red) received filled\n");
+            current_state = FILLED; // keep a local view of phase for debugging
 
             // consume EMPTY so it doesn't remain queued on red and block the next READY
             red?EMPTY;
             printf("[in controller] (red) received empty\n");
-
 
             in_cmd!CLOSE;
             printf("[in controller] (in_cmd) sent CLOSE\n");
@@ -107,7 +108,7 @@ proctype OutValveCtrl(chan blue; chan red; chan out_cmd; chan vessel) {
         printf("[out controller] (blue) sent filling request ack\n");
 
         out_cmd!CLOSE;
-        printf("[out controller] (outflow) sent CLOSE\n");
+        printf("[out controller] (out_cmd) sent CLOSE\n");
 
         vessel_state = READY;
         
@@ -123,8 +124,7 @@ proctype OutValveCtrl(chan blue; chan red; chan out_cmd; chan vessel) {
         // wait until vessel is filled
         do
         :: len(vessel) == 1 -> break
-        :: else -> skip 
-        od;
+        od; // removed else -> skip to prevent infinite inner looping
 
         vessel_state = FILLED;
 
@@ -132,16 +132,15 @@ proctype OutValveCtrl(chan blue; chan red; chan out_cmd; chan vessel) {
         printf("[out controller] (red) sent FILLED\n");
 
         out_cmd!OPEN;
-        printf("[out controller] (outflow) sent OPEN\n");
+        printf("[out controller] (out_cmd) sent OPEN\n");
 
         // wait until vessel is emptied
         do
         :: len(vessel) == 0 -> break
-        :: else -> skip
-        od;
+        od; // removed else -> skip to prevent infinite inner looping
 
         out_cmd!CLOSE;
-        printf("[out controller] (outflow) sent CLOSE\n");
+        printf("[out controller] (out_cmd) sent CLOSE\n");
 
         vessel_state = EMPTY;
         red!EMPTY;
@@ -198,8 +197,8 @@ proctype OutValve(chan inflow; chan out_cmd) {
     od
 }
 
-init {
-    atomic {
+init{
+    atomic{ // create all processes before any can be executed
         run InValveCtrl(Blue, Red, In_cmd, ToInValve, FromInValve);
         run OutValveCtrl(Blue, Red, Out_cmd, Vessel);
         run InValve(Vessel, In_cmd, ToInValve, FromInValve);
@@ -207,5 +206,5 @@ init {
     }
 }
 
-ltl p1 {[] <> (len(Vessel) == 1)} // Vessel is always eventually filled
-ltl p2 {[] <> (len(Vessel) == 0)} // Vessel is always eventually emptied
+ltl p1 {[] <> (len(Vessel) == 1)} // Vessel is filled infinitely often
+ltl p2 {[] <> (len(Vessel) == 0)} // Vessel is emptied infinitely often
