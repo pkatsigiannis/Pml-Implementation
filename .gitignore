@@ -1,0 +1,22 @@
+# ===== SPIN / PAN generated files =====
+pan
+pan.c
+pan.h
+pan.b
+pan.m
+pan.t
+*.trail
+*_spin_nvr.tmp
+
+# ===== Compilation artifacts =====
+*.o
+*.out
+*.exe
+
+# ===== Logs / generated outputs =====
+*.log
+
+# ===== OS / editor noise =====
+.DS_Store
+Thumbs.db
+*~
