@@ -2,7 +2,7 @@ mtype = {
     EMPTY, READY, FILLED, // vessel_state notifications (OutValveCtrl -> InValveCtrl) over Red channel
     STATUS_QUERY, REQ_FILLING, FILLING, // from InValveCtrl to OutValveCtrl over Blue channel
     STATUS_QUERY_ACK, REQ_FILLING_ACK, FILLING_ACK, ATTENTION, // from OutValveCtrl to InValveCtrl over Blue channel
-    OPEN, CLOSE, // commands from controllers to valves over Out_cmd and In_cmd channels
+    OPEN, CLOSE, // commands from controllers to valves over In_cmd and Out_cmd channels
     LIQUID_QUERY // query message (InValveCtrl -> InValve) - reply comes via FromInValve channel
 };
 
@@ -11,14 +11,14 @@ mtype = {
 chan Vessel = [2] of {bit};
 
 // controller-to-controller channels
-chan Blue = [2] of {mtype};
-chan Red = [2] of {mtype};
+chan Blue = [2] of {mtype}; // bi-directional
+chan Red = [2] of {mtype}; // unidirectional (OutValveCtrl -> InValveCtrl)
 
 // controller-to-valve command channels (synchronous / unbuffered)
 chan In_cmd = [0] of {mtype};
 chan Out_cmd = [0] of {mtype};
 
-chan ToInValve = [0] of {mtype}; // from InValveCtrl to InValve (sync): prevent queueing of LIQUID_QUERY requests
+chan ToInValve = [0] of {mtype}; // from InValveCtrl to InValve (synchronous: prevent queueing of LIQUID_QUERY requests)
 chan FromInValve = [1] of {bit}; // InValve reports to InValveCtrl
 
 proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan fromInValve) {
@@ -39,7 +39,7 @@ proctype InValveCtrl(chan blue; chan red; chan in_cmd; chan toInValve; chan from
         fromInValve?liquid;
         printf("[in controller] received LIQUID report\n");
 
-        liquid_detection = false; // turn OFF until next ATTENTION
+        liquid_detection = false; // OFF until next ATTENTION
 
         // ------ protocol with OutValveCtrl ------ //
         blue!STATUS_QUERY;
@@ -198,7 +198,7 @@ proctype OutValve(chan inflow; chan out_cmd) {
 }
 
 init {
-    atomic { // create all processes before any can be executed
+    atomic { // ensure all processes are created before execution begins
         run InValveCtrl(Blue, Red, In_cmd, ToInValve, FromInValve);
         run OutValveCtrl(Blue, Red, Out_cmd, Vessel);
         run InValve(Vessel, In_cmd, ToInValve, FromInValve);
